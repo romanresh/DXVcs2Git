@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DXVcs2Git.Core;
+using DXVcs2Git.Core.Git;
 using LibGit2Sharp;
 using Branch = LibGit2Sharp.Branch;
 using Commit = LibGit2Sharp.Commit;
@@ -9,12 +10,13 @@ using Tag = LibGit2Sharp.Tag;
 using User = DXVcs2Git.Core.User;
 
 namespace DXVcs2Git {
-    public class GitWrapper : IDisposable {
+    public class GitWrapper : IGitProcessExecutor, IDisposable {
         readonly string path;
         readonly Credentials credentials;
         readonly string repoPath;
         readonly string gitPath;
         readonly Repository repo;
+        readonly GitLfsFilter gitLfsFilter;
         public bool IsEmpty {
             get { return !repo.Branches.Any(); }
         }
@@ -31,6 +33,15 @@ namespace DXVcs2Git {
             this.gitPath = gitPath;
             this.repoPath = DirectoryHelper.IsGitDir(path) ? GitInit() : GitClone();
             repo = new Repository(repoPath);
+            this.gitLfsFilter = new GitLfsFilter(this);
+
+            CommandArguments commandArguments = new CommandArguments();
+            commandArguments.AddArg("lfs");
+            commandArguments.AddArg("init");
+            commandArguments.AddArg("--force");
+            Log.Message("Installing git lfs filters");
+            GlobalSettings.RegisterFilter(gitLfsFilter);
+            //this.gitShell.Execute(commandArguments.ToString(), true)
         }
         public string GitInit() {
             return Repository.Init(path);

@@ -68,6 +68,21 @@
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.IdentityModel" />
+    <Reference Include="System.Interactive">
+      <HintPath>..\Lib\System.Reactive\System.Interactive.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\System.Reactive\System.Reactive.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\System.Reactive\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Linq, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\System.Reactive\System.Reactive.Linq.dll</HintPath>
+    </Reference>
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -85,10 +100,25 @@
     <Compile Include="DataEncryptor.cs" />
     <Compile Include="DirectoryHelper.cs" />
     <Compile Include="CommitItem.cs" />
+    <Compile Include="Git\CommandArguments.cs" />
+    <Compile Include="Git\Exceptions.cs" />
+    <Compile Include="Git\Extensions.cs" />
+    <Compile Include="Git\GitEnvironment.cs" />
     <Compile Include="Git\GitLabWrapper.cs" />
+    <Compile Include="Git\GitLfsFilter.cs" />
+    <Compile Include="Git\GitLfsWrapper.cs" />
     <Compile Include="Git\GitReaderWrapper.cs" />
     <Compile Include="Git\GitRepoConfig.cs" />
+    <Compile Include="Git\GitShell.cs" />
     <Compile Include="Git\GitWrapper.cs" />
+    <Compile Include="Git\NativeMethods.cs" />
+    <Compile Include="Git\ObservableProcess.cs" />
+    <Compile Include="Git\PortableGitManager.cs" />
+    <Compile Include="Git\ProcessManager.cs" />
+    <Compile Include="Git\ProcessStarter.cs" />
+    <Compile Include="Git\ProcessWrapper.cs" />
+    <Compile Include="Git\SafeDisposable.cs" />
+    <Compile Include="Git\Utils.cs" />
     <Compile Include="HistoryItem.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="ProjectExtractor.cs" />

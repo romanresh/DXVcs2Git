@@ -19,7 +19,6 @@ namespace DXVcs2Git.Console {
     internal class Program {
         const string password = @"5O5+NitKdsK8+XapL28jIsw7GxrElr3asn5S0S1G8JA=";
         const string gitlabauthtoken = @"DidEcvpG/IxWQqDmZOFmez8pI94kuEoHSFzkxbzywxygrtiC3/2mf6VLu3hcZMX8";
-        const string AutoSyncBranch = "autosync branch: {0}";
         const string repoPath = "repo";
         const string gitServer = @"http://litvinov-lnx";
         const string vcsServer = @"net.tcp://vcsservice.devexpress.devx:9091/DXVCSService";

@@ -4,7 +4,6 @@ using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
 using System.Linq;
 
-
 namespace DXVcs2Git.Core.AD {
     public static class ADWrapper {
         public static IEnumerable<User> GetUsers() {

@@ -60,6 +60,10 @@
       <HintPath>..\packages\SharpSerializer.2.20\lib\net20\Polenter.SharpSerializer.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="SevenZipSharp, Version=0.64.3890.29348, Culture=neutral, PublicKeyToken=20de82c62b055c88, processorArchitecture=MSIL">
+      <HintPath>..\packages\SevenZipSharp.0.64\lib\SevenZipSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -71,6 +75,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandLineOptions.cs" />
+    <Compile Include="Packages\EmbeddedResource.cs" />
+    <Compile Include="Packages\GitEnvironment.cs" />
+    <Compile Include="Packages\GitLfsManager.cs" />
+    <Compile Include="Packages\PackageManager.cs" />
+    <Compile Include="Packages\PortableGitManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -129,7 +138,9 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\LibGit2Sharp.NativeBinaries.1.0.72\build\LibGit2Sharp.NativeBinaries.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\LibGit2Sharp.NativeBinaries.1.0.72\build\LibGit2Sharp.NativeBinaries.props'))" />
+    <Error Condition="!Exists('..\packages\SevenZipSharp.Interop.9.38\build\net451\SevenZipSharp.Interop.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SevenZipSharp.Interop.9.38\build\net451\SevenZipSharp.Interop.targets'))" />
   </Target>
+  <Import Project="..\packages\SevenZipSharp.Interop.9.38\build\net451\SevenZipSharp.Interop.targets" Condition="Exists('..\packages\SevenZipSharp.Interop.9.38\build\net451\SevenZipSharp.Interop.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

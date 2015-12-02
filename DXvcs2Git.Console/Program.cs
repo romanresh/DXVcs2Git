@@ -36,7 +36,7 @@ namespace DXVcs2Git.Console {
 
         static int DoWork(CommandLineOptions clo) {
             string localGitDir = clo.LocalFolder != null && Path.IsPathRooted(clo.LocalFolder) ? clo.LocalFolder : Path.Combine(Environment.CurrentDirectory, clo.LocalFolder ?? repoPath);
-            EnsureGitDir(localGitDir);
+            SetupGitEnvironment(localGitDir);
 
             string gitRepoPath = clo.Repo;
             string username = clo.Login;
@@ -46,8 +46,6 @@ namespace DXVcs2Git.Console {
             WorkMode workMode = clo.WorkMode;
             string branchName = clo.Branch;
             string trackerPath = clo.Tracker;
-            DateTime from = clo.From;
-
 
             TrackBranch branch = FindBranch(branchName, trackerPath);
             if (branch == null)
@@ -92,11 +90,14 @@ namespace DXVcs2Git.Console {
             string local = Path.GetTempFileName();
             return vcsWrapper.GetFile(historyPath, local);
         }
-        static void EnsureGitDir(string localGitDir) {
+        static void SetupGitEnvironment(string localGitDir) {
             if (Directory.Exists(localGitDir)) {
                 KillProcess("tgitcache");
                 DirectoryHelper.DeleteDirectory(localGitDir);
             }
+
+            var installDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            GitEnvironment.Setup(installDir);
         }
         static void KillProcess(string process) {
             Process[] procs = Process.GetProcessesByName(process);

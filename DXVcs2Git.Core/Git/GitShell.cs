@@ -1,6 +1,4 @@
 ﻿using System;
-using DXVcs2Git.Core.Git.GitHub.PortableGit.Helpers;
-
 namespace DXVcs2Git.Core.Git {
     public interface IObservableProcess {
         IObservable<string> CombinedOutput { get; }

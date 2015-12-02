@@ -1,21 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
+
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DXVcs2Git.Core.Git {
-    // Decompiled with JetBrains decompiler
-    // Type: GitHub.PortableGit.Helpers.MsysGitProcessManager
-    // Assembly: GitHub.PortableGit, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-    // MVID: 42A54A6F-3B9C-4837-B827-37B76CD34DD3
-    // Assembly location: C:\Users\litvinov\AppData\Local\Apps\2.0\H3M474R0.E4B\Y5WXQCJ3.3PK\gith..tion_317444273a93ac29_0003.0000_12384c781d7f8ad4\GitHub.PortableGit.dll
-
-    namespace GitHub.PortableGit.Helpers {
         public class ProcessManager {
             private readonly ProcessStarter processManager;
 
@@ -56,5 +44,3 @@ namespace DXVcs2Git.Core.Git {
             }
         }
     }
-
-}

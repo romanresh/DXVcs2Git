@@ -149,8 +149,6 @@ namespace DXVcs2Git.Core.Git {
         //}
 
         public void Show() {
-            //GitHub.NativeMethods.SetForegroundWindow(this.MainWindowHandle);
-            //GitHub.NativeMethods.ShowWindow(this.MainWindowHandle, ShowWindowOption.Restore);
         }
 
         protected virtual void Dispose(bool disposing) {

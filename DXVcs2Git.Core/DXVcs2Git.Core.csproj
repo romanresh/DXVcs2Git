@@ -104,7 +104,7 @@
     <Compile Include="Git\CommandArguments.cs" />
     <Compile Include="Git\Exceptions.cs" />
     <Compile Include="Git\Extensions.cs" />
-    <Compile Include="Git\GitEnvironment.cs" />
+    <Compile Include="Git\GitInterfaces.cs" />
     <Compile Include="Git\GitLabWrapper.cs" />
     <Compile Include="Git\GitLfsFilter.cs" />
     <Compile Include="Git\GitLfsWrapper.cs" />
@@ -114,7 +114,6 @@
     <Compile Include="Git\GitWrapper.cs" />
     <Compile Include="Git\NativeMethods.cs" />
     <Compile Include="Git\ObservableProcess.cs" />
-    <Compile Include="Git\PortableGitManager.cs" />
     <Compile Include="Git\ProcessManager.cs" />
     <Compile Include="Git\ProcessStarter.cs" />
     <Compile Include="Git\ProcessWrapper.cs" />

@@ -7,6 +7,12 @@ using System.Threading;
 
 namespace DXVcs2Git.Core {
     public static class DirectoryHelper {
+        static readonly Dictionary<string, string> toRename = new Dictionary<string, string> {
+            {"dot_git", ".git"},
+            {"gitmodules", ".gitmodules"}
+        };
+
+        static readonly Type[] whitelist = {typeof (IOException), typeof (UnauthorizedAccessException)};
         public static bool IsGitDir(string path) {
             if (!Directory.Exists(path))
                 return false;
@@ -21,34 +27,30 @@ namespace DXVcs2Git.Core {
                 return;
             }
             NormalizeAttributes(directoryPath);
-            DeleteDirectory(directoryPath, maxAttempts: 5, initialTimeout: 16, timeoutFactor: 2);
+            DeleteDirectory(directoryPath, 5, 16, 2);
         }
-
-        private static void NormalizeAttributes(string directoryPath) {
+        static void NormalizeAttributes(string directoryPath) {
             string[] filePaths = Directory.GetFiles(directoryPath);
             string[] subdirectoryPaths = Directory.GetDirectories(directoryPath);
 
-            foreach (string filePath in filePaths) {
+            foreach (string filePath in filePaths)
                 File.SetAttributes(filePath, FileAttributes.Normal);
-            }
-            foreach (string subdirectoryPath in subdirectoryPaths) {
+            foreach (string subdirectoryPath in subdirectoryPaths)
                 NormalizeAttributes(subdirectoryPath);
-            }
             File.SetAttributes(directoryPath, FileAttributes.Normal);
         }
 
-        private static void DeleteDirectory(string directoryPath, int maxAttempts, int initialTimeout, int timeoutFactor) {
-            for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+        static void DeleteDirectory(string directoryPath, int maxAttempts, int initialTimeout, int timeoutFactor) {
+            for (var attempt = 1; attempt <= maxAttempts; attempt++) {
                 try {
                     Directory.Delete(directoryPath, true);
                     return;
                 }
                 catch (Exception ex) {
-                    var caughtExceptionType = ex.GetType();
+                    Type caughtExceptionType = ex.GetType();
 
-                    if (!whitelist.Any(knownExceptionType => knownExceptionType.IsAssignableFrom(caughtExceptionType))) {
+                    if (!whitelist.Any(knownExceptionType => knownExceptionType.IsAssignableFrom(caughtExceptionType)))
                         throw;
-                    }
 
                     if (attempt < maxAttempts) {
                         Thread.Sleep(initialTimeout * (int)Math.Pow(timeoutFactor, attempt - 1));
@@ -65,29 +67,18 @@ namespace DXVcs2Git.Core {
                 }
             }
         }
-        private static readonly Dictionary<string, string> toRename = new Dictionary<string, string>
-{
-            { "dot_git", ".git" },
-            { "gitmodules", ".gitmodules" },
-        };
-
-        private static readonly Type[] whitelist = { typeof(IOException), typeof(UnauthorizedAccessException) };
 
         public static void CopyFilesRecursively(DirectoryInfo source, DirectoryInfo target) {
             // From http://stackoverflow.com/questions/58744/best-way-to-copy-the-entire-contents-of-a-directory-in-c/58779#58779
 
-            foreach (DirectoryInfo dir in source.GetDirectories()) {
+            foreach (DirectoryInfo dir in source.GetDirectories())
                 CopyFilesRecursively(dir, target.CreateSubdirectory(Rename(dir.Name)));
-            }
-            foreach (FileInfo file in source.GetFiles()) {
+            foreach (FileInfo file in source.GetFiles())
                 file.CopyTo(Path.Combine(target.FullName, Rename(file.Name)));
-            }
         }
 
-        private static string Rename(string name) {
+        static string Rename(string name) {
             return toRename.ContainsKey(name) ? toRename[name] : name;
         }
-
-
     }
 }

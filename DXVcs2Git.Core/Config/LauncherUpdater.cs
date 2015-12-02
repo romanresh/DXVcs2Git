@@ -9,12 +9,7 @@ using System.Threading.Tasks;
 namespace DXVcs2Git.Core.Configuration {
     public class LauncherHelper {
         const string LauncherProcessName = "DXVcs2Git.Launcher";
-        const string LauncherFileName = LauncherProcessName + ".exe";
-        static readonly string[] files = {
-            LauncherFileName,
-            "DXVcs2Git.Launcher.exe.config",
-            "DXVcs2Git.Core.dll"
-        };        
+        const string LauncherFileName = LauncherProcessName + ".exe";        
         public static bool UpdateLauncher(string installPath = null, Version version = null) {
             version = version ?? VersionInfo.Version;
             var config = ConfigSerializer.GetConfig();
@@ -31,12 +26,11 @@ namespace DXVcs2Git.Core.Configuration {
             } else {
                 config.InstallPath = path;
             }
-            if(!files.Select(x=> Path.Combine(path, x)).All(File.Exists))
-
-            foreach(var file in files) {
-                File.Copy(Path.Combine(path, file), Path.Combine(ConfigSerializer.SettingsPath, file), true);
-            }
-            config.LastVersion = VersionInfo.Version.ToString();
+            var launcherFullPath = Path.Combine(path, LauncherFileName);
+            if (!File.Exists(launcherFullPath))
+                return false;
+            File.Copy(launcherFullPath, Path.Combine(ConfigSerializer.SettingsPath, LauncherFileName), true);
+            config.LastVersion = version.ToString();
             ConfigSerializer.SaveConfig(config);
             return true;
         }
@@ -44,7 +38,7 @@ namespace DXVcs2Git.Core.Configuration {
             if (Process.GetProcessesByName(LauncherProcessName).Any())
                 return false;
             var launcherFullName = Path.Combine(ConfigSerializer.SettingsPath, LauncherFileName);
-            if (File.Exists(launcherFullName))
+            if (!File.Exists(launcherFullName))
                 return false;
             Process.Start(new ProcessStartInfo(launcherFullName, String.Format("-w {0}", waitInMilliseconds)));
             return true;

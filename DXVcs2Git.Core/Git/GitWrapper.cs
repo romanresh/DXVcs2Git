@@ -4,38 +4,29 @@ using System.Linq;
 using DXVcs2Git.Core;
 using DXVcs2Git.Core.Git;
 using LibGit2Sharp;
-using Branch = LibGit2Sharp.Branch;
-using Commit = LibGit2Sharp.Commit;
-using Tag = LibGit2Sharp.Tag;
-using User = DXVcs2Git.Core.User;
 
 namespace DXVcs2Git {
-    public class GitWrapper: IDisposable {
-        readonly string path;
-        readonly Credentials credentials;
-        readonly string repoPath;
-        readonly string gitPath;
-        readonly Repository repo;
-        readonly FilterRegistration gitLfsFilter;
-        readonly IGitShell shell;
+    public class GitWrapper : IDisposable {
         public bool IsEmpty {
             get { return !repo.Branches.Any(); }
         }
-        public string GitDirectory {
-            get { return repoPath; }
-        }
-        public Credentials Credentials {
-            get { return credentials; }
-        }
+        public string GitDirectory { get; }
+        public Credentials Credentials { get; }
+        readonly FilterRegistration gitLfsFilter;
+        readonly string gitPath;
+        readonly string path;
+        readonly Repository repo;
+        readonly IGitShell shell;
+        bool isDisposed;
 
         public GitWrapper(IGitShell shell, string path, string gitPath, Credentials credentials) {
             this.path = path;
-            this.credentials = credentials;
+            this.Credentials = credentials;
             this.gitPath = gitPath;
             this.shell = shell;
-            this.repoPath = DirectoryHelper.IsGitDir(path) ? GitInit() : GitClone();
-            repo = new Repository(repoPath);
-            var filter = new GitLfsFilter(shell);
+            this.GitDirectory = DirectoryHelper.IsGitDir(path) ? GitInit() : GitClone();
+            repo = new Repository(GitDirectory);
+            GitLfsFilter filter = new GitLfsFilter(shell);
 
             CommandArguments commandArguments = new CommandArguments();
             commandArguments.AddArg("lfs");
@@ -45,29 +36,28 @@ namespace DXVcs2Git {
             this.gitLfsFilter = GlobalSettings.RegisterFilter(filter);
             shell.Execute(commandArguments.ToString(), true);
         }
-        public string GitInit() {
-            return Repository.Init(path);
-        }
-        string GitClone() {
-            CloneOptions options = new CloneOptions();
-            options.CredentialsProvider += (url, fromUrl, types) => credentials;
-            string clonedRepoPath = Repository.Clone(gitPath, path, options);
-            Log.Message($"Git repo {clonedRepoPath} initialized");
-            return clonedRepoPath;
-        }
-        bool isDisposed;
         public void Dispose() {
             if (!this.isDisposed) {
                 GlobalSettings.DeregisterFilter(this.gitLfsFilter);
                 this.isDisposed = true;
             }
         }
+        public string GitInit() {
+            return Repository.Init(path);
+        }
+        string GitClone() {
+            CloneOptions options = new CloneOptions();
+            options.CredentialsProvider += (url, fromUrl, types) => Credentials;
+            string clonedRepoPath = Repository.Clone(gitPath, path, options);
+            Log.Message($"Git repo {clonedRepoPath} initialized");
+            return clonedRepoPath;
+        }
         public void Fetch(string remote = "", bool updateTags = false) {
             FetchOptions options = new FetchOptions();
-            options.CredentialsProvider += (url, fromUrl, types) => credentials;
+            options.CredentialsProvider += (url, fromUrl, types) => Credentials;
             if (updateTags)
                 options.TagFetchMode = TagFetchMode.All;
-            var network = string.IsNullOrEmpty(remote) ? repo.Network.Remotes.FirstOrDefault() : this.repo.Network.Remotes[remote];
+            Remote network = string.IsNullOrEmpty(remote) ? repo.Network.Remotes.FirstOrDefault() : this.repo.Network.Remotes[remote];
             repo.Fetch(network.Name, options);
         }
         public MergeResult Pull(User user, string branchName) {
@@ -93,9 +83,9 @@ namespace DXVcs2Git {
             CommitOptions commitOptions = new CommitOptions();
             commitOptions.AllowEmptyCommit = allowEmpty;
             DateTime localTime = timeStamp.ToLocalTime();
-            var author = ToSignature(user, localTime);
-            var comitter = ToSignature(user, localTime);
-            var commit = repo.Commit(comment, author, comitter, commitOptions);
+            Signature author = ToSignature(user, localTime);
+            Signature comitter = ToSignature(user, localTime);
+            Commit commit = repo.Commit(comment, author, comitter, commitOptions);
             Log.Message($"Git commit performed for {user} {localTime}");
             return commit;
         }
@@ -104,7 +94,7 @@ namespace DXVcs2Git {
         }
         public void Push(string refspec, bool force) {
             PushOptions options = new PushOptions();
-            options.CredentialsProvider += (url, fromUrl, types) => credentials;
+            options.CredentialsProvider += (url, fromUrl, types) => Credentials;
             options.OnPushStatusError += errors => {
                 Log.Message($"Push to refspec {refspec} failed.");
                 Log.Error($"Error: {errors.Message} in repo {errors.Reference}.");
@@ -119,16 +109,14 @@ namespace DXVcs2Git {
             string remoteName = GetOriginName(name);
             Branch remoteBranch = this.repo.Branches[remoteName];
             if (localBranch == null) {
-                if (remoteBranch != null) {
+                if (remoteBranch != null)
                     localBranch = InitLocalBranch(name, remoteBranch);
-                }
                 else if (whereCreateBranch == null) {
                     localBranch = repo.CreateBranch(name);
                     Push(name);
                 }
-                else {
+                else
                     localBranch = CreateBranchFromCommit(name, whereCreateBranch);
-                }
             }
             if (remoteBranch != null)
                 repo.Branches.Update(localBranch, b => b.TrackedBranch = remoteBranch.CanonicalName);
@@ -144,16 +132,16 @@ namespace DXVcs2Git {
             return $"origin/{name}";
         }
         public Commit FindCommit(string branchName, Func<Commit, bool> handler = null) {
-            var branch = repo.Branches[branchName];
-            var checkHandler = handler ?? (x => true);
+            Branch branch = repo.Branches[branchName];
+            Func<Commit, bool> checkHandler = handler ?? (x => true);
             return branch.Commits.FirstOrDefault(checkHandler);
         }
         public Commit FindCommit(string branchName, string comment) {
             return FindCommit(branchName, x => x.Message?.StartsWith(comment) ?? false);
         }
         public DateTime GetLastCommitTimeStamp(string branchName, User user) {
-            var branch = this.repo.Branches[branchName];
-            var commit = branch.Commits.FirstOrDefault(x => x.Committer.Name == user.UserName || x.Committer.Name == "Administrator");
+            Branch branch = this.repo.Branches[branchName];
+            Commit commit = branch.Commits.FirstOrDefault(x => x.Committer.Name == user.UserName || x.Committer.Name == "Administrator");
             return commit?.Author.When.DateTime.ToUniversalTime() ?? DateTime.MinValue;
         }
         public bool CalcHasModification() {
@@ -180,12 +168,12 @@ namespace DXVcs2Git {
             return repo.Tags[tagName];
         }
         public Commit GetHead(string branchName) {
-            var branch = repo.Branches[branchName];
+            Branch branch = repo.Branches[branchName];
             return branch.Commits.First();
         }
         public IEnumerable<TreeEntryChanges> GetChanges(Commit commit, Commit parent) {
-            var treeChanges = repo.Diff.Compare<TreeChanges>(parent.Tree, commit.Tree);
-            var changes = Enumerable.Empty<TreeEntryChanges>();
+            TreeChanges treeChanges = repo.Diff.Compare<TreeChanges>(parent.Tree, commit.Tree);
+            IEnumerable<TreeEntryChanges> changes = Enumerable.Empty<TreeEntryChanges>();
             changes = changes.Concat(treeChanges.Added);
             changes = changes.Concat(treeChanges.Deleted);
             changes = changes.Concat(treeChanges.Modified);

@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace DXVcs2Git.Core.Git {
     public class CommandArguments {
-        private readonly StringBuilder command;
+        readonly StringBuilder command;
 
         public CommandArguments() {
             this.command = new StringBuilder();

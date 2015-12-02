@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace DXVcs2Git.Core.Git {
@@ -104,8 +106,8 @@ namespace DXVcs2Git.Core.Git {
 
         public bool Start() {
             try {
-                Log.Message("Starting: " 
-                    + GetProcessLogInfo());
+                Log.Message("Starting: "
+                            + GetProcessLogInfo());
                 return this.process.Start();
             }
             catch (Exception ex) {
@@ -115,9 +117,9 @@ namespace DXVcs2Git.Core.Git {
             }
         }
         public string GetProcessLogInfo() {
-            return string.Format(CultureInfo.InvariantCulture, "Process - FileName: '{0}', Args: '{1}', Working Directory: {2}", 
-                SafeGet(() => this.process.StartInfo.FileName), 
-                SafeGet(() => this.process.StartInfo.Arguments), 
+            return string.Format(CultureInfo.InvariantCulture, "Process - FileName: '{0}', Args: '{1}', Working Directory: {2}",
+                SafeGet(() => this.process.StartInfo.FileName),
+                SafeGet(() => this.process.StartInfo.Arguments),
                 SafeGet(() => this.process.StartInfo.WorkingDirectory));
         }
         object SafeGet<T>(Func<T> func) {
@@ -144,9 +146,15 @@ namespace DXVcs2Git.Core.Git {
             this.process.Kill();
         }
 
-        //public void KillProcessTree() {
-        //    KillProcessTree(this.process);
-        //}
+        public void KillProcessTree() {
+            KillProcessTree(this.process);
+        }
+
+        void KillProcessTree(Process process) {
+            foreach (Process process1 in GetChildProcesses(process.Id))
+                KillProcessTree(process1);
+            Log.DoOrWarnException(process.Kill, "Failed to kill a process");
+        }
 
         public void Show() {
         }
@@ -157,27 +165,31 @@ namespace DXVcs2Git.Core.Git {
             this.processDisposer.Dispose();
         }
 
-        //static void KillProcessTree(Process process) {
-        //    foreach (Process process1 in GetChildProcesses(process.Id))
-        //        KillProcessTree(process1);
-        //}
-
-        //static IEnumerable<Process> GetChildProcesses(int processId) {
-        //    try {
-        //        return Enumerable.Select(Enumerable.Where(Enumerable.Select((IEnumerable<Process>)Process.GetProcesses(), process => new {
-        //            process,
-        //            parent = LoggerExtensions.GetResultOrWarnException<Process>(ProcessWrapper.log, (Func<Process>)(() => GetParentProcess(process)), (Process)null, "Failed to get parent process")
-        //        }), param0 => {
-        //            if (param0.parent != null)
-        //                return param0.parent.Id == processId;
-        //            return false;
-        //        }), param0 => param0.process);
-        //    }
-        //    catch (Exception ex) {
-        //        ProcessWrapper.log.Error("Exception while enumerating child processes", ex);
-        //        throw;
-        //    }
-        //}
+        static IEnumerable<Process> GetChildProcesses(int processId) {
+            try {
+                return Process.GetProcesses().Select(process => new {
+                    process,
+                    parent = GetResultOrWarnException(() => GetParentProcess(process), null, "Failed to get parent process")
+                }).Where(param0 => {
+                    if (param0.parent != null)
+                        return param0.parent.Id == processId;
+                    return false;
+                }).Select(param0 => param0.process);
+            }
+            catch (Exception ex) {
+                Log.Error("Exception while enumerating child processes", ex);
+                throw;
+            }
+        }
+        public static T GetResultOrWarnException<T>(Func<T> action, T defaultValue, string failureMessage, params object[] args) {
+            try {
+                return action();
+            }
+            catch (Exception ex) {
+                Log.Message(string.Format(CultureInfo.InvariantCulture, failureMessage, args), ex);
+                return defaultValue;
+            }
+        }
 
         static Process GetParentProcess(Process process) {
             try {

@@ -11,7 +11,7 @@ namespace DXVcs2Git.Core.Git {
             this.repo = new Repository(repoPath);
         }
         public string GetRemoteRepoPath() {
-            var remote = this.repo.Network.Remotes.FirstOrDefault();
+            Remote remote = this.repo.Network.Remotes.FirstOrDefault();
             return remote?.PushUrl;
         }
         public Branch GetCheckoutBranch() {

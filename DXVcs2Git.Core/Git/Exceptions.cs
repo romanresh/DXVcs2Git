@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using DXVcs2Git.Core.Git;
 
 namespace DXVcs2Git.Core.Git {
     [Serializable]

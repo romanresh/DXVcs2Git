@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using CommandLine;
 using DXVcs2Git.Core;
+using DXVcs2Git.Core.Git;
 using DXVcs2Git.Core.Serialization;
 using DXVcs2Git.DXVcs;
 using DXVcs2Git.Git;
@@ -36,7 +37,6 @@ namespace DXVcs2Git.Console {
 
         static int DoWork(CommandLineOptions clo) {
             string localGitDir = clo.LocalFolder != null && Path.IsPathRooted(clo.LocalFolder) ? clo.LocalFolder : Path.Combine(Environment.CurrentDirectory, clo.LocalFolder ?? repoPath);
-            SetupGitEnvironment(localGitDir);
 
             string gitRepoPath = clo.Repo;
             string username = clo.Login;
@@ -66,7 +66,12 @@ namespace DXVcs2Git.Console {
                 return 1;
             }
 
-            GitWrapper gitWrapper = CreateGitWrapper(gitRepoPath, localGitDir, branch, username, password);
+            PrepareGitEnvironment(localGitDir);
+            var installDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            GitEnvironment.Setup(installDir);
+            GitShell gitShell = new GitShell(new GitProcessManager(new ProcessStarter()), GitEnvironment.PortableGitManager);
+
+            GitWrapper gitWrapper = CreateGitWrapper(gitShell, gitRepoPath, localGitDir, branch, username, password);
             if (gitWrapper == null)
                 return 1;
 
@@ -90,14 +95,11 @@ namespace DXVcs2Git.Console {
             string local = Path.GetTempFileName();
             return vcsWrapper.GetFile(historyPath, local);
         }
-        static void SetupGitEnvironment(string localGitDir) {
+        static void PrepareGitEnvironment(string localGitDir) {
             if (Directory.Exists(localGitDir)) {
                 KillProcess("tgitcache");
                 DirectoryHelper.DeleteDirectory(localGitDir);
             }
-
-            var installDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            GitEnvironment.Setup(installDir);
         }
         static void KillProcess(string process) {
             Process[] procs = Process.GetProcessesByName(process);
@@ -107,8 +109,8 @@ namespace DXVcs2Git.Console {
                 proc.WaitForExit();
             }
         }
-        static GitWrapper CreateGitWrapper(string gitRepoPath, string localGitDir, TrackBranch branch, string username, string password) {
-            GitWrapper gitWrapper = new GitWrapper(localGitDir, gitRepoPath, new UsernamePasswordCredentials() { Username = username, Password = password });
+        static GitWrapper CreateGitWrapper(IGitShell gitShell, string gitRepoPath, string localGitDir, TrackBranch branch, string username, string password) {
+            GitWrapper gitWrapper = new GitWrapper(gitShell, localGitDir, gitRepoPath, new UsernamePasswordCredentials() { Username = username, Password = password });
             if (gitWrapper.IsEmpty) {
                 Log.Error($"Specified branch {branch.Name} in repo {gitRepoPath} is empty. Initialize repo properly.");
                 return null;

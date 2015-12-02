@@ -1,17 +1,32 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using LibGit2Sharp;
 
 namespace DXVcs2Git.Core.Git {
-    public interface IGitProcessExecutor {
-        
+    public interface IObservableProcess {
+        IObservable<string> CombinedOutput { get; }
+        IObservable<string> Output { get; }
+        IObservable<string> Error { get; }
+        IObserver<string> Input { get; }
+    }
+    public interface IGitShell {
+        IObservableProcess Execute(string arguments, bool throwOnNonZeroExitCode);
+        IObservableProcess Execute(string arguments, string workingDirectory, bool throwOnNonZeroExitCode);
     }
 
     public class GitLfsFilter : Filter {
-        static readonly FilterAttributeEntry FilterAttribute = new FilterAttributeEntry("filter=lfs");
+        static readonly FilterAttributeEntry FilterAttribute = new FilterAttributeEntry("lfs");
         static readonly string FilterName = "git-lfs-filter";
-        IGitProcessExecutor Shell { get; }
-        public GitLfsFilter(IGitProcessExecutor shell) : base(FilterName, new List<FilterAttributeEntry>() { FilterAttribute }) {
+        IGitShell Shell { get; }
+        public GitLfsFilter(IGitShell shell) : base(FilterName, new List<FilterAttributeEntry>() { FilterAttribute }) {
             Shell = shell;
+        }
+        protected override void Clean(string path, string root, Stream input, Stream output) {
+            base.Clean(path, root, input, output);
+        }
+        protected override void Smudge(string path, string root, Stream input, Stream output) {
+            base.Smudge(path, root, input, output);
         }
     }
 
@@ -19,10 +34,10 @@ namespace DXVcs2Git.Core.Git {
     //    private static readonly Logger log = LogManager.GetCurrentClassLogger();
     //    private static readonly FilterAttributeEntry filterAttribute = new FilterAttributeEntry("filter=lfs");
     //    private const string filterName = "git-lfs-filter";
-    //    private readonly IGitProcessExecutor gitShell;
+    //    private readonly IGitShell gitShell;
 
     //    [ImportingConstructor]
-    //    public GitLfsFilter(IGitProcessExecutor shell)
+    //    public GitLfsFilter(IGitShell shell)
     //      : base("git-lfs-filter", (IEnumerable<FilterAttributeEntry>)new List<FilterAttributeEntry>()
     //      {
     //    GitLfsFilter.filterAttribute

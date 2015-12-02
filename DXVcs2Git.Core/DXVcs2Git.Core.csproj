@@ -110,7 +110,6 @@
     <Compile Include="Git\GitLfsWrapper.cs" />
     <Compile Include="Git\GitReaderWrapper.cs" />
     <Compile Include="Git\GitRepoConfig.cs" />
-    <Compile Include="Git\GitShell.cs" />
     <Compile Include="Git\GitWrapper.cs" />
     <Compile Include="Git\NativeMethods.cs" />
     <Compile Include="Git\ObservableProcess.cs" />

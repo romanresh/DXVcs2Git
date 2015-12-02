@@ -33,7 +33,7 @@ namespace DXVcs2Git.Core.Git {
             try {
                 return this.Start(processStartInfo);
             }
-            catch (Win32Exception ex) {
+            catch (Win32Exception) {
                 return this.Start(new ProcessStartInfo(ProcessStarter.isSafeFile(path) ? path : Path.GetDirectoryName(path)) {
                     ErrorDialog = false,
                     UseShellExecute = true

@@ -124,7 +124,7 @@ namespace DXVcs2Git.Core.Git {
             try {
                 return func().ToString();
             }
-            catch (Exception ex) {
+            catch (Exception) {
                 return "(unknown)";
             }
         }
@@ -200,7 +200,7 @@ namespace DXVcs2Git.Core.Git {
             try {
                 return Process.GetProcessById(processInformation.InheritedFromUniqueProcessId.ToInt32());
             }
-            catch (ArgumentException ex) {
+            catch (ArgumentException) {
                 return null;
             }
         }

@@ -1,16 +1,12 @@
-﻿
-
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 
 namespace DXVcs2Git.Core.Git {
-        public class ProcessManager {
-            private readonly ProcessStarter processManager;
-
-            public ProcessManager(ProcessStarter processManager) {
+        public class GitProcessManager {
+            readonly ProcessStarter processManager;
+            public GitProcessManager(ProcessStarter processManager) {
                 this.processManager = processManager;
             }
-
             public IObservableProcess StartProcess(string executableFileName, string arguments, string workingDirectory, bool throwOnNonZeroExitCode, bool ensureGitExtracted) {
                 ProcessStartInfo startInfo = this.SetUpStartInfo(executableFileName, arguments, workingDirectory ?? Path.GetTempPath());
                 startInfo.FileName = executableFileName;

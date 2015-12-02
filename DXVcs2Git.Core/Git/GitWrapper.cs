@@ -10,13 +10,14 @@ using Tag = LibGit2Sharp.Tag;
 using User = DXVcs2Git.Core.User;
 
 namespace DXVcs2Git {
-    public class GitWrapper : IGitProcessExecutor, IDisposable {
+    public class GitWrapper: IDisposable {
         readonly string path;
         readonly Credentials credentials;
         readonly string repoPath;
         readonly string gitPath;
         readonly Repository repo;
-        readonly GitLfsFilter gitLfsFilter;
+        readonly FilterRegistration gitLfsFilter;
+        readonly IGitShell shell;
         public bool IsEmpty {
             get { return !repo.Branches.Any(); }
         }
@@ -27,21 +28,22 @@ namespace DXVcs2Git {
             get { return credentials; }
         }
 
-        public GitWrapper(string path, string gitPath, Credentials credentials) {
+        public GitWrapper(IGitShell shell, string path, string gitPath, Credentials credentials) {
             this.path = path;
             this.credentials = credentials;
             this.gitPath = gitPath;
+            this.shell = shell;
             this.repoPath = DirectoryHelper.IsGitDir(path) ? GitInit() : GitClone();
             repo = new Repository(repoPath);
-            this.gitLfsFilter = new GitLfsFilter(this);
+            var filter = new GitLfsFilter(shell);
 
             CommandArguments commandArguments = new CommandArguments();
             commandArguments.AddArg("lfs");
             commandArguments.AddArg("init");
             commandArguments.AddArg("--force");
             Log.Message("Installing git lfs filters");
-            GlobalSettings.RegisterFilter(gitLfsFilter);
-            //this.gitShell.Execute(commandArguments.ToString(), true)
+            this.gitLfsFilter = GlobalSettings.RegisterFilter(filter);
+            shell.Execute(commandArguments.ToString(), true);
         }
         public string GitInit() {
             return Repository.Init(path);
@@ -53,7 +55,12 @@ namespace DXVcs2Git {
             Log.Message($"Git repo {clonedRepoPath} initialized");
             return clonedRepoPath;
         }
+        bool isDisposed;
         public void Dispose() {
+            if (!this.isDisposed) {
+                GlobalSettings.DeregisterFilter(this.gitLfsFilter);
+                this.isDisposed = true;
+            }
         }
         public void Fetch(string remote = "", bool updateTags = false) {
             FetchOptions options = new FetchOptions();

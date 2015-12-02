@@ -78,6 +78,7 @@
     <Compile Include="Packages\EmbeddedResource.cs" />
     <Compile Include="Packages\GitEnvironment.cs" />
     <Compile Include="Packages\GitLfsManager.cs" />
+    <Compile Include="Packages\GitShell.cs" />
     <Compile Include="Packages\PackageManager.cs" />
     <Compile Include="Packages\PortableGitManager.cs" />
     <Compile Include="Program.cs" />

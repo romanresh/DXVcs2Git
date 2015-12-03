@@ -68,8 +68,9 @@ namespace DXVcs2Git.Console {
 
             PrepareGitEnvironment(localGitDir);
             var installDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            GitEnvironment.Setup(installDir);
-            GitShell gitShell = new GitShell(new GitProcessManager(new ProcessStarter()), GitEnvironment.PortableGitManager);
+            GitEnvironment gitEnvironment = new GitEnvironment();
+            gitEnvironment.Setup(installDir);
+            GitShell gitShell = new GitShell(new GitProcessManager(new ProcessStarter()), gitEnvironment.PortableGitManager, gitEnvironment);
 
             GitWrapper gitWrapper = CreateGitWrapper(gitShell, gitRepoPath, localGitDir, branch, username, password);
             if (gitWrapper == null)

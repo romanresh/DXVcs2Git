@@ -36,7 +36,7 @@ namespace DXVcs2Git {
             commandArguments.AddArg("--force");
             Log.Message("Installing git lfs filters");
             //this.gitLfsFilter = GlobalSettings.RegisterFilter(filter);
-            this.shell.Execute(commandArguments.ToString(), true).Wait();
+            this.shell.Execute(commandArguments.ToString(),  path, true).Wait();
         }
         public void Dispose() {
             if (!this.isDisposed) {
@@ -160,8 +160,7 @@ namespace DXVcs2Git {
             commandArguments.AddArg("fetch");
             
             Log.Message("git lfs fetch");
-            //this.gitLfsFilter = GlobalSettings.RegisterFilter(filter);
-            this.shell.Execute(commandArguments.ToString(), true).Wait();
+            this.shell.Execute(commandArguments.ToString(), this.path, true).Wait();
         }
         public void CheckOut(Commit commit) {
             CheckoutOptions options = new CheckoutOptions();

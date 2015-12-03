@@ -86,11 +86,11 @@ namespace DXVcs2Git.Core.Git {
 
         int GetExitCode(ProcessWrapper process, ref bool completed) {
             try {
-                //if (LoggerExtensions.GetResultOrWarnException<bool>(ObservableProcess.log, (Func<bool>)(() => process.WaitForExit(3600000)), false, "Failed to wait for exit: " + ProcessExtensions.GetProcessLogInfo(process))) {
-                //    completed = true;
-                //    return process.ExitCode;
-                //}
-                //LoggerExtensions.DoOrWarnException(ObservableProcess.log, new Action(process.KillProcessTree), "Failed to kill the process tree." + ProcessExtensions.GetProcessLogInfo(process));
+                if (GetResultOrWarnException(() => process.WaitForExit(processTimeoutMilliseconds), false, "Failed to wait for exit: " + process.GetProcessLogInfo())) {
+                    completed = true;
+                    return process.ExitCode;
+                }
+                Log.DoOrWarnException(process.KillProcessTree, "Failed to kill the process tree." + process.GetProcessLogInfo());
                 this.error.OnNext("Process timed out");
                 return -1;
             }
@@ -98,7 +98,15 @@ namespace DXVcs2Git.Core.Git {
                 this.Cleanup(process);
             }
         }
-
+        public static T GetResultOrWarnException<T>(Func<T> action, T defaultValue, string failureMessage, params object[] args) {
+            try {
+                return action();
+            }
+            catch (Exception ex) {
+                Log.Message(string.Format(CultureInfo.InvariantCulture, failureMessage, args), ex);
+                return defaultValue;
+            }
+        }
         void Cleanup(ProcessWrapper process) {
             this.output.OnCompleted();
             this.error.OnCompleted();

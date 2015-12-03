@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
 using DXVcs2Git.Core;
 using DXVcs2Git.Core.Git;
 using LibGit2Sharp;
@@ -33,8 +35,8 @@ namespace DXVcs2Git {
             commandArguments.AddArg("init");
             commandArguments.AddArg("--force");
             Log.Message("Installing git lfs filters");
-            this.gitLfsFilter = GlobalSettings.RegisterFilter(filter);
-            shell.Execute(commandArguments.ToString(), true);
+            //this.gitLfsFilter = GlobalSettings.RegisterFilter(filter);
+            this.shell.Execute(commandArguments.ToString(), true).Wait();
         }
         public void Dispose() {
             if (!this.isDisposed) {
@@ -152,6 +154,14 @@ namespace DXVcs2Git {
             CheckoutOptions options = new CheckoutOptions();
             options.CheckoutModifiers = CheckoutModifiers.Force;
             repo.Checkout(repo.Branches[branchName], options);
+
+            CommandArguments commandArguments = new CommandArguments();
+            commandArguments.AddArg("lfs");
+            commandArguments.AddArg("fetch");
+            
+            Log.Message("git lfs fetch");
+            //this.gitLfsFilter = GlobalSettings.RegisterFilter(filter);
+            this.shell.Execute(commandArguments.ToString(), true).Wait();
         }
         public void CheckOut(Commit commit) {
             CheckoutOptions options = new CheckoutOptions();

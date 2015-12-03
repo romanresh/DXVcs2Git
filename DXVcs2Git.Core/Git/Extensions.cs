@@ -192,25 +192,25 @@ namespace DXVcs2Git.Core.Git {
                         });
         }
 
-        public static IObservable<T> Using<TResource, T>(Func<IObservable<TResource>> resourceFactory, Func<TResource, IObservable<T>> observableFactory) where TResource : IDisposable {
-            return Observable.Create((Func<IObserver<T>, IDisposable>)(obs => {
-                SingleAssignmentDisposable disp = new SingleAssignmentDisposable();
-                Observable.Materialize(resourceFactory()).Take(1).Subscribe(notification => {
-                    if (notification.Kind == NotificationKind.OnCompleted)
-                        obs.OnCompleted();
-                    else if (notification.Kind == NotificationKind.OnError)
-                        obs.OnError(notification.Exception);
-                    else if (disp.IsDisposed) {
-                        if (notification.Value == null)
-                            return;
-                        notification.Value.Dispose();
-                    }
-                    else
-                        disp.Disposable = Observable.Using(() => notification.Value, observableFactory).Subscribe(obs);
-                });
-                return (IDisposable)disp;
-            }));
-        }
+        //public static IObservable<T> Using<TResource, T>(Func<IObservable<TResource>> resourceFactory, Func<TResource, IObservable<T>> observableFactory) where TResource : IDisposable {
+        //    return Observable.Create((Func<IObserver<T>, IDisposable>)(obs => {
+        //        SingleAssignmentDisposable disp = new SingleAssignmentDisposable();
+        //        Observable.Materialize(resourceFactory()).Take(1).Subscribe(notification => {
+        //            if (notification.Kind == NotificationKind.OnCompleted)
+        //                obs.OnCompleted();
+        //            else if (notification.Kind == NotificationKind.OnError)
+        //                obs.OnError(notification.Exception);
+        //            else if (disp.IsDisposed) {
+        //                if (notification.Value == null)
+        //                    return;
+        //                notification.Value.Dispose();
+        //            }
+        //            else
+        //                disp.Disposable = Observable.Using(() => notification.Value, observableFactory).Subscribe(obs);
+        //        });
+        //        return (IDisposable)disp;
+        //    }));
+        //}
 
         public static IObservable<T> ErrorIfEmpty<T>(this IObservable<T> source, Exception exc) {
             return source.Materialize().Scan(Tuple.Create(false, (Notification<T>)null), (prev, cur) => Tuple.Create(prev.Item1 || cur.Kind == NotificationKind.OnNext, cur)).SelectMany(x => {

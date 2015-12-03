@@ -8,7 +8,7 @@ using System.Reactive.Subjects;
 
 namespace DXVcs2Git.Core.Git {
     public class PipableObservableProcess : IPipableObservableProcess, IObservable<Unit> {
-        const int processTimeoutMilliseconds = 10000;
+        const int processTimeoutMilliseconds = 20000;
         readonly AsyncSubject<Unit> exit = new AsyncSubject<Unit>();
         readonly ProcessWrapper process;
 

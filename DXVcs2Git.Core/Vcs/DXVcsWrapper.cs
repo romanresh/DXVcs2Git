@@ -191,9 +191,12 @@ namespace DXVcs2Git.DXVcs {
         }
         public bool ProcessCheckout(IEnumerable<SyncItem> items) {
             var list = items.ToList();
-            if (!list.All(x => ProcessCheckoutItem(x, x.Comment.ToString()))) {
+            var allItemsAreCheckedOut = true;
+            foreach(var item in list)
+                allItemsAreCheckedOut = ProcessCheckoutItem(item, item.Comment.ToString()) && allItemsAreCheckedOut;
+            if(!allItemsAreCheckedOut) {
                 Log.Message("Rollback changes after failed checkout.");
-                list.All(RollbackItem);
+                list.ForEach(item => RollbackItem(item));
                 return false;
             }
             return true;

@@ -24,5 +24,6 @@ namespace DXVcs2Git.DXVcs {
         UserInfo[] GetUsers();
         FileStateInfo GetFileData(string vcsPath);
         bool HasLiveLinks(string vcsPath);
+        LinkInfo[] GetLiveLinks(string vcsPath);
     }
 }

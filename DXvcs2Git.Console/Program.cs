@@ -34,7 +34,7 @@ namespace DXVcs2Git.Console {
 
         const string repoPath = "repo";
         const string vcsServer = @"net.tcp://vcsservice.devexpress.devx:9091/DXVCSService";
-        const int MaxChangesCount = 1000;
+        const int MaxChangesCount = 300;
         static void Main(string[] args) {
             var result = Parser.Default.ParseArguments<CommandLineOptions>(args);
             var exitCode = result.MapResult(clo => {
